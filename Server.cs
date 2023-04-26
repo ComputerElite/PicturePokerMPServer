@@ -245,6 +245,17 @@ public class Server
         server.AddRouteFile("/", frontend + "index.html", null);
         server.AddRouteFile("/style.css", frontend + "style.css", null);
         server.AddRouteFile("/script.js", frontend + "script.js", null);
+        server.AddRoute("GET", "/game/", request =>
+        {
+            string folderPath = frontend + "game" + Path.DirectorySeparatorChar;
+            string file = folderPath + request.pathDiff.Replace('/', Path.DirectorySeparatorChar);
+            Logger.Log(folderPath);
+            Dictionary<string, string> headers = new Dictionary<string, string>();
+            if(file.EndsWith(".br")) headers.Add("Content-Encoding", "br");
+            if (File.Exists(file)) request.SendFile(file, "", 200, true, headers);
+            else request.Send404();
+            return true;
+        }, true);
         server.StartServer(config.port);
     }
 

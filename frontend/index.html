@@ -12,14 +12,14 @@
     <table id="lobbies" width="100%">
         
     </table>
-    <h2>Open game in browser (still worked on)</h2>
+    <h2>Open game in browser</h2>
     <input type="button" onclick="OpenInBrowser()" value="Open in browser">
 <script>
     setInterval(UpdateLobbies, 3000)
     UpdateLobbies()
     
     function OpenInBrowser() {
-        alert("Not yet implemented")
+        location = "/game/index.html"
     }
     
     function UpdateLobbies() {
