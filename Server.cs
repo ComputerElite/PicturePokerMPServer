@@ -78,17 +78,10 @@ public class Server
         public void AddClient(SocketServerRequest request)
         {
             lastActivity = DateTime.Now;
-            Logger.Log("Trying to add client");
             if (GetPlayerIndex(request) == -1)
             {
-                Logger.Log("Added client to lobby");
                 players.Add(new Player { handler = request });
-                Logger.Log("Added client to lobby");
                 request.SendString(JsonSerializer.Serialize(new LobbyUpdated(this))); // Send player who joined the status of the lobby
-            }
-            else
-            {
-                Logger.Log("Client already in lobby");
             }
         }
 
