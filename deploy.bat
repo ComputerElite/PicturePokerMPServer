@@ -39,7 +39,7 @@ del net6.0.zip
 
 echo Creating new update zip
 7z a net6.0.zip *.dll *.pdb *.exe *.json frontend ref runtimes
-explorer
+explorer .
 
 echo Created update zip
 cd..
