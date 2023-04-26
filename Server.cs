@@ -42,8 +42,6 @@ public class Server
             int playerIndex = GetPlayerIndex(request);
             if (playerIndex == -1) return;
             bool sendJoinMessage = players[playerIndex].name != msg.player;
-            if(msg.type == "Ready") players[playerIndex].ready = true;
-            if(msg.type == "NotReady") players[playerIndex].ready = false;
             players[playerIndex].name = msg.player;
             players[playerIndex].registered = true;
             if (sendJoinMessage)
@@ -104,7 +102,7 @@ public class Server
                     continue;
                 }
 
-                if (players[i].handler.handler != sender.handler)
+                if (sender == null || players[i].handler.handler != sender.handler)
                 {
                     Logger.Log("Forwarding msg to " + players[i].handler.context.Request.RemoteEndPoint.Address);
                     players[i].handler.SendString(msg);
