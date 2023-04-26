@@ -1,0 +1,243 @@
+/* Change background color of buttons on hover */
+.tab button:hover {
+    background-color: var(--hoverColor);
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+    background-color: var(--selectedColor);
+}
+
+button {
+    color: var(--fontColor)
+}
+
+table, th, td {
+    border-bottom: 1px solid #EEEEEE;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+}
+th {
+    text-align: left;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+}
+
+.wide {
+    width: 100%;
+}
+
+label {
+    display: flex;
+    align-items: center;
+}
+
+.big {
+    font-size: 1.5em;
+    white-space: normal;
+    margin-bottom: 20px;
+}
+
+u {
+    color: var(--interactableColor);
+}
+
+text {
+    white-space: nowrap;
+    margin-right: 20px;
+}
+
+.tab button:hover {
+    background-color: var(--hoverColor);
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+    background-color: var(--selectedColor);
+}
+
+.tabContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.tab {
+    background-color: var(--hightlightColor);
+}
+
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    font-size: 1.1em;
+    transition: 0.2s;
+}
+
+
+
+
+body {
+    background-color: var(--bgColor);
+    color: var(--fontColor);
+    margin: 0;
+    font-family: 'Open Sans';
+}
+
+:root {
+    --red: #FF5757;
+    --redDark: #FF1A1A;
+    --fontColor: #EEEEEE;
+    --bgColor: #181A1B;
+    --hightlightColor: #202324;
+    --hightlightColorIntense: #424546;
+    --hoverColor: #2B2F31;
+    --selectedColor: #35393B;
+    --interactableColor: #63FAC3;
+    --brightHoverColor: #4aaf8b;
+    --brightHighlightColor: #397e66;
+    --borderRadius: 5px;
+    font-size: 22px!important;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 99vh;
+    padding: 5px;
+}
+
+.textarea {
+    height: 100%;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Consolas';
+}
+
+.hidden {
+    display: none;
+}
+
+.red {
+    color: var(--red);
+    border-color: var(--red);
+}
+
+.margin-top {
+    margin-top: 30px;
+}
+
+.grid3 {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    column-gap: 10px;
+    row-gap: 10px;
+}
+
+b {
+    color: var(--interactableColor);
+}
+
+input, textarea, select, .textarea {
+    border-radius: var(--borderRadius);
+    background-color: var(--bgColor);
+    color: var(--interactableColor);
+    border: 1px solid var(--interactableColor);
+    font-size: 1em;
+    padding: 5px;
+}
+
+.center {
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.textbox {
+    border: #03cffc 1px solid;
+    visibility: hidden;
+    padding: 5px;
+    width: fit-content;
+    margin-top: 10px;
+}
+
+a {
+    color: var(--interactableColor);
+}
+
+h1 {
+    color: var(--interactableColor);
+}
+
+h2 {
+    color: var(--interactableColor);
+}
+
+h3 {
+    color: var(--interactableColor);
+}
+
+h4 {
+    color: var(--interactableColor);
+}
+
+h5 {
+    color: var(--interactableColor);
+}
+
+h6 {
+    color: var(--interactableColor);
+}
+
+@keyframes flashbang {
+    0% {
+        background-color: #00000000;
+        visibility: hidden;
+    }
+    65% {
+        background-color: #00000000;
+        visibility: hidden;
+    }
+    65.000001% {
+        background-color: #FFFFFFFF;
+        visibility: visible;
+    }
+    75% {
+        background-color: #FFFFFFFF;
+        visibility: visible;
+    }
+    85% {
+        background-color: #00000000;
+        visibility: visible;
+    }
+    100% {
+        visibility: hidden;
+    }
+}
+
+.content {
+    padding: 10px;
+}
+
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.column {
+    flex-direction: column;
+}
+
+input {
+    margin-right: 10px;
+    margin:2px;
+}

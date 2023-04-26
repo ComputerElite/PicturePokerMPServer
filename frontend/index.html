@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="style.css" type="text/css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css">
+    <title>Picture Poker MP Server</title>
+</head>
+<body>
+    <h1>Picture Poker MP Server</h1>
+    <h2>Lobbies</h2>
+    <table id="lobbies" width="100%">
+        
+    </table>
+    <h2>Open game in browser (still worked on)</h2>
+    <input type="button" onclick="OpenInBrowser()" value="Open in browser">
+<script>
+    setInterval(UpdateLobbies, 3000)
+    UpdateLobbies()
+    
+    function OpenInBrowser() {
+        alert("Not yet implemented")
+    }
+    
+    function UpdateLobbies() {
+        fetch("/api/lobbies").then(res => res.json().then(j => {
+            var html = "";
+            html += `<tr><th>Id</th><th>Players</th><th>IsPrivate</th></tr>`
+            var lobbies = ""
+            for(const lobby of j) {
+                var players = ""
+                for(const player of lobby.players) {
+                    players += `${player.name} (${player.registered}), `
+                }
+                lobbies += `<tr><td>${lobby.id}</td><td>${players}</td><td>${lobby.isPrivate}</td></tr>`
+            }
+            if(!lobbies) {
+                lobbies = "<tr><td colspan='3'>No lobbies</td></tr>"
+            }
+            html += lobbies
+            document.getElementById("lobbies").innerHTML = html
+        }))
+    }
+</script>
+</body>
+</html>
