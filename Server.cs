@@ -234,6 +234,16 @@ public class Server
             request.SendString(JsonSerializer.Serialize(lobbies[request.pathDiff]), "application/json");
             return true;
         });
+        server.AddRoute("GET", "/api/createlobby/", request =>
+        {
+            CleanUpLobbies();
+            string lobbyCode = GetNonExistentLobbyCode();
+            // Create lobby
+            lobbies.Add(lobbyCode, new Lobby(lobbyCode));
+            lobbies[lobbyCode].isPrivate = true;
+            request.SendString(JsonSerializer.Serialize(new PlayerFound(lobbyCode)));
+            return true;
+        });
         server.AddRouteFile("/", frontend + "index.html", null);
         server.AddRouteFile("/style.css", frontend + "style.css", null);
         server.AddRouteFile("/script.js", frontend + "script.js", null);
