@@ -163,7 +163,7 @@ public class Server
 
     public void Start()
     {
-        string frontend = "../../../frontend/";
+        string frontend = Directory.Exists("../../../frontend/") ? "../../../frontend/" : "frontend/";
         server = new HttpServer();
         server.AddWSRoute("/lobbies/", request =>
         {
