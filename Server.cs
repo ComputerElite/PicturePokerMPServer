@@ -90,6 +90,20 @@ public class Server
         /// <param name="sender">sender of the msg</param>
         public void Broadcast(string msg, SocketServerRequest sender)
         {
+            CleanLobby();
+            for (int i = 0; i < players.Count; i++)
+            {
+
+                if (sender == null || players[i].handler.handler != sender.handler)
+                {
+                    Logger.Log("Forwarding msg to " + players[i].handler.context.Request.RemoteEndPoint.Address);
+                    players[i].handler.SendString(msg);
+                }
+            }
+        }
+
+        public void CleanLobby()
+        {
             for (int i = 0; i < players.Count; i++)
             {
                 if (players[i].handler.handler.closed || players[i].handler.handler.socket.State == WebSocketState.Closed || players[i].handler.handler.socket.State == WebSocketState.Aborted)
@@ -99,13 +113,6 @@ public class Server
                     i--;
                     if(name != "")
                         Broadcast(JsonSerializer.Serialize(new ChatMessage(name + " left the lobby")),null); // send leave message in chat
-                    continue;
-                }
-
-                if (sender == null || players[i].handler.handler != sender.handler)
-                {
-                    Logger.Log("Forwarding msg to " + players[i].handler.context.Request.RemoteEndPoint.Address);
-                    players[i].handler.SendString(msg);
                 }
             }
         }
@@ -252,7 +259,7 @@ public class Server
             Logger.Log(folderPath);
             Dictionary<string, string> headers = new Dictionary<string, string>();
             if(file.EndsWith(".br")) headers.Add("Content-Encoding", "br");
-            if (File.Exists(file)) request.SendFile(file, "", 200, true, headers);
+            if (File.Exists(file)) request.SendFile(file, file.EndsWith(".wasm.br") ? "application/wasm" : "", 200, true, headers);
             else request.Send404();
             return true;
         }, true);
@@ -280,6 +287,7 @@ public class Server
         List<string> lobbyCodes = lobbies.Keys.ToList();
         for (int i = 0; i < lobbyCodes.Count; i++)
         {
+            lobbies[lobbyCodes[i]].CleanLobby();
             if(lobbies[lobbyCodes[i]].players.Count <= 0 && (DateTime.Now - lobbies[lobbyCodes[i]].lastActivity).TotalMinutes > 5) // after 5 mins of inactivity without players
             {
                 lobbies.Remove(lobbyCodes[i]);
