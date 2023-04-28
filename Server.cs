@@ -168,11 +168,13 @@ public class Server
     public class PlayerFound
     {
         public string lobbyToUse { get; set; } = "";
+        public int opponentsInLobby { get; set; } = 0;
         public PlayerFound() {}
 
-        public PlayerFound(string lobbyCode)
+        public PlayerFound(string lobbyCode, int opponentsInLobby)
         {
             lobbyToUse = lobbyCode;
+            this.opponentsInLobby = opponentsInLobby;
         }
     }
     
@@ -232,12 +234,12 @@ public class Server
                 
                 // Create lobby
                 lobbies.Add(lobbyCode, new Lobby(lobbyCode));
-                request.SendString(JsonSerializer.Serialize(new PlayerFound(lobbyCode)));
+                request.SendString(JsonSerializer.Serialize(new PlayerFound(lobbyCode, 1)));
                 // Remove own request from the list
                 searchingForPlayers.RemoveAll(x => x.handler == request.handler);
                 
                 // Send the lobby code to the other player
-                searchingForPlayers[0].SendString(JsonSerializer.Serialize(new PlayerFound(lobbyCode)));
+                searchingForPlayers[0].SendString(JsonSerializer.Serialize(new PlayerFound(lobbyCode, 1)));
                 searchingForPlayers.RemoveAt(0);
             }
         });
@@ -261,7 +263,7 @@ public class Server
             // Create lobby
             lobbies.Add(lobbyCode, new Lobby(lobbyCode));
             lobbies[lobbyCode].isPrivate = true;
-            request.SendString(JsonSerializer.Serialize(new PlayerFound(lobbyCode)));
+            request.SendString(JsonSerializer.Serialize(new PlayerFound(lobbyCode, 0)));
             return true;
         });
         server.AddRouteFile("/", frontend + "index.html", null);
