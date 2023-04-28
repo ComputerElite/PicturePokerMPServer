@@ -44,6 +44,7 @@ public class Server
             bool sendJoinMessage = players[playerIndex].name != msg.player;
             players[playerIndex].name = msg.player;
             players[playerIndex].registered = true;
+            if (msg.type == "GameReady") players[playerIndex].inGame = true;
             if (sendJoinMessage)
             {
                 Broadcast(JsonSerializer.Serialize(new ChatMessage(msg.player + " joined the lobby")),null); // send join message in chat
@@ -122,6 +123,7 @@ public class Server
     {
         public string name { get; set; } = "";
         public bool registered { get; set; } = false;
+        public bool inGame { get; set; } = false;
         public bool ready { get; set; } = false;
         public SocketServerRequest handler = null;
     }
