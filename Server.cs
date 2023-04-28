@@ -117,8 +117,12 @@ public class Server
                     string name = players[i].name;
                     players.RemoveAt(i);
                     i--;
-                    if(name != "")
+                    if (name != "")
+                    {
+                        // Broadcast lobby status and send player left lobby message
                         Broadcast(JsonSerializer.Serialize(new ChatMessage(name + " left the lobby")),null); // send leave message in chat
+                        Broadcast(JsonSerializer.Serialize(new LobbyUpdated(this)),null); // broadcast lobby update
+                    }
                 }
             }
         }
