@@ -137,7 +137,7 @@ public class Server
     public class LobbyUpdated
     {
         public string type { get; set; } = "LobbyUpdated";
-        public string player { get; set; } = "::Server::";
+        public string player { get; set; } = "System";
         public Lobby data { get; set; } = new Lobby();
         
         public LobbyUpdated() {}
@@ -146,7 +146,7 @@ public class Server
     public class ChatMessage
     {
         public string type { get; set; } = "ChatMessage";
-        public string player { get; set; } = "::Server::";
+        public string player { get; set; } = "System";
         public string data { get; set; } = "";
         
         public ChatMessage() {}
