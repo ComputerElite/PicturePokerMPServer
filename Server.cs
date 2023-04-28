@@ -37,7 +37,7 @@ public class Server
         /// </summary>
         /// <param name="msg">websocket message</param>
         /// <param name="request">websocket handler</param>
-        public void PopulatePlayer(WebsocketMessageHeaders msg, SocketServerRequest request)
+        public void PopulatePlayer(WebsocketMessageHeaders msg, SocketServerRequest request, string orgMsg)
         {
             int playerIndex = GetPlayerIndex(request);
             if (playerIndex == -1) return;
@@ -45,6 +45,11 @@ public class Server
             players[playerIndex].name = msg.player;
             players[playerIndex].registered = true;
             if (msg.type == "GameReady") players[playerIndex].inGame = true;
+            if (msg.type == "MyCoins")
+            {
+                WebsocketMessage<int> coins = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
+                players[playerIndex].coins = coins.data;
+            }
             if (sendJoinMessage)
             {
                 Broadcast(JsonSerializer.Serialize(new ChatMessage(msg.player + " joined the lobby")),null); // send join message in chat
@@ -125,6 +130,7 @@ public class Server
         public bool registered { get; set; } = false;
         public bool inGame { get; set; } = false;
         public bool ready { get; set; } = false;
+        public int coins { get; set; } = 0;
         public SocketServerRequest handler = null;
     }
 
@@ -150,6 +156,13 @@ public class Server
     {
         public string type { get; set; } = "";
         public string player { get; set; } = "";
+    }
+    
+    public class WebsocketMessage<T>
+    {
+        public string type { get; set; } = "";
+        public string player { get; set; } = "";
+        public T data { get; set; } = default(T);
     }
 
     public class PlayerFound
@@ -182,7 +195,7 @@ public class Server
             try
             {
                 msg = JsonSerializer.Deserialize<WebsocketMessageHeaders>(request.bodyString);
-                lobbies[gameId].PopulatePlayer(msg, request);
+                lobbies[gameId].PopulatePlayer(msg, request, request.bodyString);
             } catch (Exception e)
             {
                 Logger.Log("Couldn't parse json and thus won't do anything with it", LoggingType.Warning);
