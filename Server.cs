@@ -50,6 +50,13 @@ public class Server
                 WebsocketMessage<int> coins = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
                 players[playerIndex].coins = coins.data;
             }
+
+            if (msg.type == "Disconnect")
+            {
+                request.Close();
+                CleanLobby();
+                return;
+            }
             if (sendJoinMessage)
             {
                 Broadcast(JsonSerializer.Serialize(new ChatMessage(msg.player + " joined the lobby")),null); // send join message in chat
