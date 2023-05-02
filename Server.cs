@@ -259,8 +259,27 @@ public class Server
     
     public Dictionary<string, Lobby> lobbies = new Dictionary<string, Lobby>();
     public List<SocketServerRequest> searchingForPlayers = new List<SocketServerRequest>();
-    
-    
+
+    public static Version minGameVersion = new Version("1.3.0.0");
+
+    public bool HandlGameVersion(SocketServerRequest request)
+    {
+        return false;
+        string gameVersion = request.queryString.Get("version");
+        if (gameVersion != null)
+        {
+            gameVersion = new string(gameVersion.Where(c => "0123456789.".Contains(c)).ToArray()); // remove everything which ain't a number or a dot
+            Logger.Log("Game version is " + new Version(gameVersion) + " and min version is " + minGameVersion);
+            if (new Version(gameVersion).CompareTo(minGameVersion) < 0)
+            {
+                request.SendString(JsonSerializer.Serialize(new WebsocketMessage<string> { type = "Error", data = "Your game version is outdated. Please update to the latest version." }));
+                request.Close();
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public void Start()
     {
@@ -269,6 +288,7 @@ public class Server
         server = new HttpServer();
         server.AddWSRoute("/lobbies/", request =>
         {
+            if (HandlGameVersion(request)) return;
             string gameId = request.pathDiff;
             if (gameId == "") return;
             if (!lobbies.ContainsKey(gameId)) lobbies.Add(gameId, new Lobby(gameId));
@@ -287,6 +307,7 @@ public class Server
         }, true);
         server.AddWSRoute("/searchingforplayers", request =>
         {
+            if (HandlGameVersion(request)) return;
             // Clean all closed connections
             for (int i = 0; i < searchingForPlayers.Count; i++)
             {
