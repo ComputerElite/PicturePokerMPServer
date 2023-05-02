@@ -18,10 +18,47 @@ public class Server
         }
     }
 
+    public class UserProfile
+    {
+        public PlayerColor color { get; set; } = new PlayerColor();
+        public string loginToken { get; set; } = "";
+    }
+
+    public class UserProfileHandler
+    {
+        public static string profileLocation
+        {
+            get
+            {
+                return Env.dataDir + "profiles.json";
+            }
+        }
+        public static List<UserProfile> profiles = new List<UserProfile>();
+        public static void LoadProfiles()
+        {
+            if(!File.Exists(profileLocation)) File.WriteAllText(profileLocation, JsonSerializer.Serialize(new List<UserProfile>()));
+            profiles = JsonSerializer.Deserialize<List<UserProfile>>(File.ReadAllText(profileLocation));
+        }
+
+        public static UserProfile GetUserProfileByLoginToken(string token)
+        {
+            return profiles.FirstOrDefault(x => x.loginToken == token);
+        }
+
+        public static PlayerColor GetPlayerColor(string loginToken)
+        {
+            UserProfile p = GetUserProfileByLoginToken(loginToken);
+            if (p == null) return new PlayerColor();
+            return p.color;
+        }
+    }
+
     public class Lobby
     {
         public List<Player> players { get; set; } = new List<Player>();
         public string id { get; set; } = "";
+        public string host { get; set; } = "";
+        public int betMultiplier { get; set; } = 1;
         public bool isPrivate { get; set; } = false;
         public DateTime lastActivity { get; set; } = DateTime.Now;
         
@@ -41,10 +78,27 @@ public class Server
         {
             int playerIndex = GetPlayerIndex(request);
             if (playerIndex == -1) return;
-            bool sendJoinMessage = players[playerIndex].name != msg.player;
-            players[playerIndex].name = msg.player;
+            bool sendJoinMessage = players[playerIndex].id != msg.id;
+            players[playerIndex].name = msg.name;
+            players[playerIndex].id = msg.id;
+            if (host == "") host = msg.id;
             players[playerIndex].registered = true;
+            if (msg.type == "Hello")
+            {
+                WebsocketMessage<string> login = JsonSerializer.Deserialize<WebsocketMessage<string>>(orgMsg);
+                players[playerIndex].loginToken = login.login;
+            }
+            players[playerIndex].color = UserProfileHandler.GetPlayerColor(players[playerIndex].loginToken);
             if (msg.type == "GameReady") players[playerIndex].inGame = true;
+            if (msg.type == "LobbyBetChange")
+            {
+                if (host == msg.id)
+                {
+                    // host changed bet
+                    WebsocketMessage<int> bet = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
+                    betMultiplier = bet.data;
+                }
+            }
             if (msg.type == "MyCoins")
             {
                 WebsocketMessage<int> coins = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
@@ -59,7 +113,7 @@ public class Server
             }
             if (sendJoinMessage)
             {
-                Broadcast(JsonSerializer.Serialize(new ChatMessage(msg.player + " joined the lobby")),null); // send join message in chat
+                Broadcast(JsonSerializer.Serialize(new ChatMessage(msg.name + " joined the lobby")),null); // send join message in chat
             }
             Broadcast(JsonSerializer.Serialize(new LobbyUpdated(this)),null); // broadcast lobby update
         }
@@ -138,11 +192,22 @@ public class Server
     public class Player
     {
         public string name { get; set; } = "";
+        public string id { get; set; } = "";
+        // login will not be sent. It'll get received and stored in the server with the Hello event
+        public string loginToken = "";
         public bool registered { get; set; } = false;
+        public PlayerColor color { get; set; } = new PlayerColor();
         public bool inGame { get; set; } = false;
         public bool ready { get; set; } = false;
         public int coins { get; set; } = 0;
         public SocketServerRequest handler = null;
+    }
+
+    public class PlayerColor
+    {
+        public float r { get; set; } = 1f;
+        public float g { get; set; } = 1f;
+        public float b { get; set; } = 1f;
     }
 
     public class LobbyUpdated
@@ -166,13 +231,16 @@ public class Server
     public class WebsocketMessageHeaders
     {
         public string type { get; set; } = "";
-        public string player { get; set; } = "";
+        public string id { get; set; } = "";
+        public string name { get; set; } = "";
     }
     
     public class WebsocketMessage<T>
     {
         public string type { get; set; } = "";
         public string player { get; set; } = "";
+        public string login { get; set; } = "";
+
         public T data { get; set; } = default(T);
     }
 
@@ -196,6 +264,7 @@ public class Server
 
     public void Start()
     {
+        UserProfileHandler.LoadProfiles();
         string frontend = Directory.Exists("../../../frontend/") ? "../../../frontend/" : "frontend/";
         server = new HttpServer();
         server.AddWSRoute("/lobbies/", request =>

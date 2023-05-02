@@ -30,7 +30,7 @@
             for(const lobby of j) {
                 var players = ""
                 for(const player of lobby.players) {
-                    players += `${player.name} (${player.registered}), `
+                    players += `${player.name} (${player.id}), `
                 }
                 lobbies += `<tr><td>${lobby.id}</td><td>${players}</td><td>${lobby.isPrivate}</td></tr>`
             }
