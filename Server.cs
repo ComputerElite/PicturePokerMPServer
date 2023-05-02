@@ -175,7 +175,7 @@ public class Server
         {
             for (int i = 0; i < players.Count; i++)
             {
-                if (players[i].handler.handler.closed || players[i].handler.handler.socket.State == WebSocketState.Closed || players[i].handler.handler.socket.State == WebSocketState.Aborted)
+                if (players[i].handler.handler.closed || players[i].handler.handler.socket.State != WebSocketState.Open)
                 {
                     string name = players[i].name;
                     players.RemoveAt(i);
