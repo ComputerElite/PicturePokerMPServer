@@ -60,6 +60,7 @@ public class Server
         public string host { get; set; } = "";
         public int betMultiplier { get; set; } = 1;
         public bool isPrivate { get; set; } = false;
+        public bool inProgress { get; set; } = false;
         public DateTime lastActivity { get; set; } = DateTime.Now;
         
         public Lobby() {}
@@ -99,6 +100,7 @@ public class Server
                     betMultiplier = bet.data;
                 }
             }
+            if(msg.type == "Start") inProgress = true;
             if (msg.type == "MyCoins")
             {
                 WebsocketMessage<int> coins = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
