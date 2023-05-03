@@ -189,6 +189,11 @@ public class Server
                 }
             }
         }
+
+        public int GetPlayerCount()
+        {
+            return players.Count(x => x.registered);
+        }
     }
 
     public class Player
@@ -330,6 +335,18 @@ public class Server
                 }
             }
             if(!containsClient) searchingForPlayers.Add(request);
+            // Check if a public lobby with less than 4 players exists
+            Lobby l = lobbies.Values.FirstOrDefault(x => x.isPrivate == false && x.GetPlayerCount() < 4);
+            if (l != null)
+            {
+                // A lobby with less than 4 players exists, join it
+                request.SendString(JsonSerializer.Serialize(new PlayerFound(l.id, l.GetPlayerCount())));
+                // Remove own request from the list
+                searchingForPlayers.RemoveAll(x => x.handler == request.handler);
+                return;
+            }
+            
+            // If no lobby has been found wait for 2 players searching for opponents
             if (searchingForPlayers.Count >= 2)
             {
                 // If 2 or more players are searching for a game, create a lobby and send the lobby code to both players
