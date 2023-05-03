@@ -71,7 +71,7 @@ public class Server
         }
 
         /// <summary>
-        /// Populates a player with the name from the websocket message
+        /// Populates a player with the name from the websocket message and updates the lobby accordingly
         /// </summary>
         /// <param name="msg">websocket message</param>
         /// <param name="request">websocket handler</param>
@@ -91,6 +91,17 @@ public class Server
             }
             players[playerIndex].color = UserProfileHandler.GetPlayerColor(players[playerIndex].loginToken);
             if (msg.type == "GameReady") players[playerIndex].inGame = true;
+            if (msg.type == "ReadyForNextRound") players[playerIndex].readyForNextRound = true;
+            if (players.Where(x => x.registered).All(x => x.readyForNextRound))
+            {
+                // everyone is ready for next round
+                if (!isPrivate)
+                {
+                    // in public lobbies server changes bet on new round
+                    betMultiplier = new Random().Next(1, 5);
+                    players.ForEach(x => x.readyForNextRound = false);
+                }
+            }
             if (msg.type == "LobbyBetChange")
             {
                 if (host == msg.id)
@@ -208,6 +219,7 @@ public class Server
         public bool ready { get; set; } = false;
         public int coins { get; set; } = 0;
         public SocketServerRequest handler = null;
+        public bool readyForNextRound = false;
     }
 
     public class PlayerColor
