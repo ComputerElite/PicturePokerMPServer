@@ -348,7 +348,7 @@ public class Server
             }
             if(!containsClient) searchingForPlayers.Add(request);
             // Check if a public lobby with less than 4 players exists
-            Lobby l = lobbies.Values.FirstOrDefault(x => x.isPrivate == false && x.GetPlayerCount() < 4);
+            Lobby l = lobbies.Values.FirstOrDefault(x => x.isPrivate == false && x.GetPlayerCount() < 4 && x.GetPlayerCount() > 1);
             if (l != null)
             {
                 // A lobby with less than 4 players exists, join it
@@ -437,7 +437,7 @@ public class Server
         for (int i = 0; i < lobbyCodes.Count; i++)
         {
             lobbies[lobbyCodes[i]].CleanLobby();
-            if(lobbies[lobbyCodes[i]].players.Count <= 0 && (DateTime.Now - lobbies[lobbyCodes[i]].lastActivity).TotalMinutes > 5) // after 5 mins of inactivity without players
+            if(lobbies[lobbyCodes[i]].players.Count <= 0 && (DateTime.Now - lobbies[lobbyCodes[i]].lastActivity).TotalSeconds > 30) // after 30 sec of inactivity without players
             {
                 lobbies.Remove(lobbyCodes[i]);
                 lobbyCodes.RemoveAt(i);
