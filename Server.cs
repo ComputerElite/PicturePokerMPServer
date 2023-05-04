@@ -63,6 +63,8 @@ public class Server
         public bool inProgress { get; set; } = false;
         public DateTime lastActivity { get; set; } = DateTime.Now;
         
+        public Dictionary<string, PlayerNumber> PlayerNumbers = new Dictionary<string, PlayerNumber>();
+
         public Lobby() {}
 
         public Lobby(string id)
@@ -89,6 +91,7 @@ public class Server
                 WebsocketMessage<string> login = JsonSerializer.Deserialize<WebsocketMessage<string>>(orgMsg);
                 players[playerIndex].loginToken = login.login;
             }
+            UpdatePlayerNumbers();
             players[playerIndex].color = UserProfileHandler.GetPlayerColor(players[playerIndex].loginToken);
             if (msg.type == "GameReady") players[playerIndex].inGame = true;
             if (msg.type == "ReadyForNextRound") players[playerIndex].readyForNextRound = true;
@@ -129,6 +132,39 @@ public class Server
                 Broadcast(JsonSerializer.Serialize(new ChatMessage(msg.name + " joined the lobby")),null); // send join message in chat
             }
             Broadcast(JsonSerializer.Serialize(new LobbyUpdated(this)),null); // broadcast lobby update
+        }
+
+        /// <summary>
+        /// Makes sure players in the lobby are ascending, sets all player instances with their respective player number
+        /// </summary>
+        private void UpdatePlayerNumbers()
+        {
+            // Remove all players which aren't in the lobby anymore from the player numbers dictionary
+            PlayerNumbers = PlayerNumbers.Where(x => players.Any(y => y.id == x.Key && y.registered)).ToDictionary(x => x.Key, x => x.Value);
+            // Now make sure the playerNumbers have ascending values
+            for (int i = 0; i < 4; i++)
+            {
+                if (!PlayerNumbers.ContainsValue((PlayerNumber)i))
+                {
+                    foreach (string playerId in PlayerNumbers.Keys)
+                    {
+                        // if the player number is greater than i, decrease it by one. This will make sure that the player numbers are ascending
+                        if ((int)PlayerNumbers[playerId] > i) PlayerNumbers[playerId] = (PlayerNumber)((int)PlayerNumbers[playerId] - 1);
+                    }
+                }
+            }
+            // All all players which are registered but not in the player numbers dictionary yet
+            foreach (Player player in players.Where(x => x.registered && !PlayerNumbers.ContainsKey(x.id)))
+            {
+                PlayerNumbers.Add(player.id, (PlayerNumber)PlayerNumbers.Count);
+            }
+            
+            // Finally update all players with their respecting player number
+            foreach (Player player in players)
+            {
+                if (!PlayerNumbers.ContainsKey(player.id)) return;
+                player.playerNumber = PlayerNumbers[player.id];
+            }
         }
 
         /// <summary>
@@ -199,6 +235,8 @@ public class Server
                     }
                 }
             }
+            // After lobby cleanup update player numbers
+            UpdatePlayerNumbers();
         }
 
         public int GetPlayerCount()
@@ -211,6 +249,8 @@ public class Server
     {
         public string name { get; set; } = "";
         public string id { get; set; } = "";
+
+        public PlayerNumber playerNumber { get; set; } = PlayerNumber.P1;
         // login will not be sent. It'll get received and stored in the server with the Hello event
         public string loginToken = "";
         public bool registered { get; set; } = false;
@@ -220,6 +260,14 @@ public class Server
         public int coins { get; set; } = 0;
         public SocketServerRequest handler = null;
         public bool readyForNextRound = false;
+    }
+
+    public enum PlayerNumber
+    {
+        P1 = 0,
+        P2 = 1,
+        P3 = 2,
+        P4 = 3
     }
 
     public class PlayerColor
