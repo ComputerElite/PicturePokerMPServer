@@ -101,7 +101,7 @@ public class Server
                 if (!isPrivate)
                 {
                     // in public lobbies server changes bet on new round
-                    betMultiplier = new Random().Next(1, 5);
+                    betMultiplier = new Random().Next(1, 6);
                     players.ForEach(x => x.readyForNextRound = false);
                 }
             }
