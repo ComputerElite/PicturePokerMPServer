@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PicturePokerMPServer", "PicturePokerMPServer\PicturePokerMPServer.csproj", "{FC2819FE-201A-4B75-9FAC-647000E498F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputerUtils", "ComputerUtils\ComputerUtils\ComputerUtils.csproj", "{8B292EE5-862C-4797-946D-43F84BEBD60C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{FC2819FE-201A-4B75-9FAC-647000E498F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC2819FE-201A-4B75-9FAC-647000E498F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC2819FE-201A-4B75-9FAC-647000E498F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B292EE5-862C-4797-946D-43F84BEBD60C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B292EE5-862C-4797-946D-43F84BEBD60C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B292EE5-862C-4797-946D-43F84BEBD60C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B292EE5-862C-4797-946D-43F84BEBD60C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

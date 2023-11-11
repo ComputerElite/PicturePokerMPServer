@@ -31,7 +31,7 @@ namespace PicturePokerMPServer
             Env.config = Config.LoadConfig();
             if (cla.HasArgument("update"))
             {
-                Updater.UpdateNetApp(Path.GetFileName(Assembly.GetExecutingAssembly().Location), Env.workingDir);
+                Updater.UpdateNetApp(Path.GetFileName(Assembly.GetExecutingAssembly().Location), cla);
             }
             Server s = new Server();
             s.Start();
