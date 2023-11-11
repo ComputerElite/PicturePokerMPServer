@@ -9,7 +9,7 @@ namespace PicturePokerMPServer;
 public class Server
 {
     public HttpServer server;
-    public static bool automaticallyAddBots = true;
+    public static bool automaticallyAddBots = false;
     public static int botCount = 1;
 
     public Config config
