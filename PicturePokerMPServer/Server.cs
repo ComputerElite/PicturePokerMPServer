@@ -74,7 +74,7 @@ public class Server
         public bool isPrivate { get; set; } = false;
         public bool inProgress { get; set; } = false;
         public int currentRound { get; set; } = 0;
-        public int roundCount { get; set; } = 3;
+        public int roundCount { get; set; } = 5;
         public DateTime lastActivity { get; set; } = DateTime.Now;
         
         public Dictionary<string, PlayerNumber> PlayerNumbers = new Dictionary<string, PlayerNumber>();
@@ -256,6 +256,12 @@ public class Server
             lastActivity = DateTime.Now;
             if (GetPlayerIndex(request) == -1)
             {
+                if (inProgress)
+                {
+                    // Player is not allowed to join
+                    request.Close();
+                    return;
+                }
                 players.Add(new Player { handler = request });
                 if (automaticallyAddBots)
                 {
@@ -476,7 +482,7 @@ public class Server
             }
             if(!containsClient) searchingForPlayers.Add(request);
             // Check if a public lobby with less than 4 players exists
-            Lobby l = lobbies.Values.FirstOrDefault(x => x.isPrivate == false && x.GetPlayerCount() < 4 && x.GetPlayerCount() > 1);
+            Lobby l = lobbies.Values.FirstOrDefault(x => x.isPrivate == false && x.GetPlayerCount() < 4 && x.GetPlayerCount() > 1 && x.inProgress == false);
             if (l != null)
             {
                 // A lobby with less than 4 players exists, join it
