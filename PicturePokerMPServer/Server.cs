@@ -75,6 +75,7 @@ public class Server
         public bool inProgress { get; set; } = false;
         public int currentRound { get; set; } = 0;
         public int roundCount { get; set; } = 5;
+        public int playersExpected { get; set; } = 0;
         public DateTime lastActivity { get; set; } = DateTime.Now;
         
         public Dictionary<string, PlayerNumber> PlayerNumbers = new Dictionary<string, PlayerNumber>();
@@ -166,7 +167,19 @@ public class Server
                     roundCount = rounds.data;
                 }
             }
-            if(msg.type == "Start") inProgress = true;
+            
+            if (inProgress && playersExpected == players.Count)
+            {
+                // all players have joined
+                playersExpected = -1;
+            }
+
+            if (msg.type == "Start")
+            {
+                inProgress = true;
+                playersExpected = players.Count;
+            }
+
             if (msg.type == "MyCoins")
             {
                 WebsocketMessage<int> coins = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
@@ -256,7 +269,7 @@ public class Server
             lastActivity = DateTime.Now;
             if (GetPlayerIndex(request) == -1)
             {
-                if (inProgress)
+                if (inProgress && playersExpected == -1)
                 {
                     // Player is not allowed to join
                     request.Close();
