@@ -9,6 +9,8 @@ namespace PicturePokerMPServer;
 public class Server
 {
     public HttpServer server;
+    public static bool automaticallyAddBots = true;
+    public static int botCount = 3;
 
     public Config config
     {
@@ -52,6 +54,16 @@ public class Server
             return p.color;
         }
     }
+    
+    public enum CardType
+    {
+        Cloud = 0,
+        Mushroom = 1,
+        Fireflower = 2,
+        Luigi = 3,
+        Mario = 4,
+        Star = 5
+    }
 
     public class Lobby
     {
@@ -61,6 +73,8 @@ public class Server
         public int betMultiplier { get; set; } = 1;
         public bool isPrivate { get; set; } = false;
         public bool inProgress { get; set; } = false;
+        public int currentRound { get; set; } = 0;
+        public int roundCount { get; set; } = 3;
         public DateTime lastActivity { get; set; } = DateTime.Now;
         
         public Dictionary<string, PlayerNumber> PlayerNumbers = new Dictionary<string, PlayerNumber>();
@@ -70,6 +84,31 @@ public class Server
         public Lobby(string id)
         {
             this.id = id;
+        }
+
+        public void UpdateBots(string msgType)
+        {
+            UpdateBots(x =>
+            {
+                if (msgType == "MyCards")
+                {
+                    // Human player sent cards, generate random cards and send them too
+                    List<CardType> cards = new List<CardType>();
+                    for (int i = 0; i < 5; i++)
+                    {
+                        cards.Add((CardType)Random.Shared.Next(0, 6));
+                    }
+                    Broadcast(JsonSerializer.Serialize(new WebsocketMessage<List<CardType>> {data = cards, type = "MyCards", id = x.id }), null);
+                }else if (msgType == "DrawHoldPressed")
+                {
+                    // We also press the button when the player presses it
+                    Broadcast(JsonSerializer.Serialize(new WebsocketMessage<string> {data = "", type = "DrawHoldPressed", id = x.id }), null);
+                } else if (msgType == "ReadyForNextRound")
+                {
+                    x.readyForNextRound = true;
+                    Broadcast(JsonSerializer.Serialize(new WebsocketMessage<string> {data = "", type = "ReadyForNextRound", id = x.id }), null);
+                }
+            });
         }
 
         /// <summary>
@@ -93,17 +132,21 @@ public class Server
             }
             UpdatePlayerNumbers();
             players[playerIndex].color = UserProfileHandler.GetPlayerColor(players[playerIndex].loginToken);
-            if (msg.type == "GameReady") players[playerIndex].inGame = true;
-            if (msg.type == "ReadyForNextRound") players[playerIndex].readyForNextRound = true;
+            if (msg.type == "GameReady")
+            {
+                UpdateBots(x => { x.inGame = true; });
+                players[playerIndex].inGame = true;
+            }
+
+            if (msg.type == "ReadyForNextRound")
+            {
+                players[playerIndex].readyForNextRound = true;
+            }
             if (players.Where(x => x.registered).All(x => x.readyForNextRound))
             {
-                // everyone is ready for next round
-                if (!isPrivate)
-                {
-                    // in public lobbies server changes bet on new round
-                    betMultiplier = new Random().Next(1, 6);
-                    players.ForEach(x => x.readyForNextRound = false);
-                }
+                players.ForEach(x => x.readyForNextRound = false);
+                // as next round can start, increment round counter
+                currentRound++;
             }
             if (msg.type == "LobbyBetChange")
             {
@@ -112,6 +155,15 @@ public class Server
                     // host changed bet
                     WebsocketMessage<int> bet = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
                     betMultiplier = bet.data;
+                }
+            }
+            if (msg.type == "LobbyRoundChange")
+            {
+                if (host == msg.id)
+                {
+                    // host changed rounds
+                    WebsocketMessage<int> rounds = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
+                    roundCount = rounds.data;
                 }
             }
             if(msg.type == "Start") inProgress = true;
@@ -131,7 +183,17 @@ public class Server
             {
                 Broadcast(JsonSerializer.Serialize(new ChatMessage(msg.name + " joined the lobby")),null); // send join message in chat
             }
+
+            UpdateBots(msg.type);
             Broadcast(JsonSerializer.Serialize(new LobbyUpdated(this)),null); // broadcast lobby update
+        }
+
+        private void UpdateBots(Action<Player> action)
+        {
+            players.ForEach(x =>
+            {
+                if(x.isServerBot) action.Invoke(x);
+            });
         }
 
         /// <summary>
@@ -176,7 +238,7 @@ public class Server
         {
             for (int i = 0; i < players.Count; i++)
             {
-                if (players[i].handler.handler == request.handler)
+                if (players[i].handler != null && players[i].handler.handler == request.handler)
                 {
                     return i;
                 }
@@ -195,6 +257,22 @@ public class Server
             if (GetPlayerIndex(request) == -1)
             {
                 players.Add(new Player { handler = request });
+                if (automaticallyAddBots)
+                {
+                    for (int i = 1; i <= botCount; i++)
+                    {
+                        players.Add(new Player()
+                        {
+                            id = "Bot" + i,
+                            name = "Bot " + i,
+                            loginToken = i.ToString(),
+                            isServerBot = true,
+                            registered = true,
+                            playerNumber = (PlayerNumber)i,
+                            coins = 30
+                        });
+                    }
+                }
                 request.SendString(JsonSerializer.Serialize(new LobbyUpdated(this))); // Send player who joined the status of the lobby
             }
         }
@@ -210,7 +288,7 @@ public class Server
             for (int i = 0; i < players.Count; i++)
             {
 
-                if (sender == null || players[i].handler.handler != sender.handler)
+                if (!players[i].isServerBot && (sender == null || players[i].handler.handler != sender.handler))
                 {
                     Logger.Log("Forwarding msg to " + players[i].handler.context.Request.RemoteEndPoint.Address);
                     players[i].handler.SendString(msg);
@@ -222,7 +300,7 @@ public class Server
         {
             for (int i = 0; i < players.Count; i++)
             {
-                if (players[i].handler.handler.closed || players[i].handler.handler.socket.State != WebSocketState.Open)
+                if (players[i].handler != null && (players[i].handler.handler.closed || players[i].handler.handler.socket.State != WebSocketState.Open))
                 {
                     string name = players[i].name;
                     players.RemoveAt(i);
@@ -257,6 +335,7 @@ public class Server
         public PlayerColor color { get; set; } = new PlayerColor();
         public bool inGame { get; set; } = false;
         public bool ready { get; set; } = false;
+        public bool isServerBot { get; set; } = false;
         public int coins { get; set; } = 0;
         public SocketServerRequest handler = null;
         public bool readyForNextRound = false;
@@ -306,6 +385,7 @@ public class Server
     {
         public string type { get; set; } = "";
         public string player { get; set; } = "";
+        public string id { get; set; } = "";
         public string login { get; set; } = "";
 
         public T data { get; set; } = default(T);
