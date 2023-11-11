@@ -10,7 +10,7 @@ public class Server
 {
     public HttpServer server;
     public static bool automaticallyAddBots = true;
-    public static int botCount = 3;
+    public static int botCount = 1;
 
     public Config config
     {
@@ -143,7 +143,7 @@ public class Server
             {
                 players[playerIndex].readyForNextRound = true;
             }
-            if (players.Where(x => x.registered).All(x => x.readyForNextRound))
+            if (players.Where(x => x.registered).All(x => x.readyForNextRound) && (playersExpected == -1 || players.Count == playersExpected))
             {
                 players.ForEach(x => x.readyForNextRound = false);
                 // as next round can start, increment round counter
