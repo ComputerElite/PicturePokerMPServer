@@ -314,7 +314,7 @@ public class Server
         {
             try
             {
-                
+
                 WebsocketMessageHeaders msgParsed = JsonSerializer.Deserialize<WebsocketMessageHeaders>(msg);
                 if (msgParsed.type == "ChatMessage")
                 {
@@ -323,7 +323,11 @@ public class Server
                     chatMessage.data = chatMessage.data.Replace("<", "").Replace(">", "").Substring(0, 100);
                     msg = JsonSerializer.Serialize(chatMessage);
                 }
-            } catch(Exception e) {}
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Error sanitiing chat message" + e, LoggingType.Warning);
+            }
             CleanLobby();
             for (int i = 0; i < players.Count; i++)
             {
