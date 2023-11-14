@@ -167,6 +167,15 @@ public class Server
                     roundCount = rounds.data;
                 }
             }
+            if (msg.type == "SetRoundCount")
+            {
+                if (host == msg.id)
+                {
+                    // host changed rounds
+                    WebsocketMessage<int> roundsSet = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
+                    currentRound = roundsSet.data;
+                }
+            }
             
             if (inProgress && playersExpected == players.Count)
             {
@@ -303,6 +312,18 @@ public class Server
         /// <param name="sender">sender of the msg</param>
         public void Broadcast(string msg, SocketServerRequest sender)
         {
+            try
+            {
+                
+                WebsocketMessageHeaders msgParsed = JsonSerializer.Deserialize<WebsocketMessageHeaders>(msg);
+                if (msgParsed.type == "ChatMessage")
+                {
+                    // replace >, < and limit the message to 100 chars
+                    WebsocketMessage<string> chatMessage = JsonSerializer.Deserialize<WebsocketMessage<string>>(msg);
+                    chatMessage.data = chatMessage.data.Replace("<", "").Replace(">", "").Substring(0, 100);
+                    msg = JsonSerializer.Serialize(chatMessage);
+                }
+            } catch(Exception e) {}
             CleanLobby();
             for (int i = 0; i < players.Count; i++)
             {
