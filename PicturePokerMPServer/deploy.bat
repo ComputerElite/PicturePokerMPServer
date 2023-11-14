@@ -28,7 +28,6 @@ echo Changelog:
 echo.
 echo %changelog%\nFull changes: https://github.com/ComputerElite/PicturePokerMPServer/commit/%id%
 
-start "" https://manage.rui2015.me/
 cd..
 cd..
 cd..
@@ -39,7 +38,6 @@ del net6.0.zip
 
 echo Creating new update zip
 7z a net6.0.zip *.dll *.pdb *.exe *.json frontend ref runtimes
-explorer .
 
 echo Created update zip
 cd..
