@@ -143,11 +143,9 @@ public class Server
             {
                 players[playerIndex].readyForNextRound = true;
             }
-            if (players.Where(x => x.registered).All(x => x.readyForNextRound) && (playersExpected == -1 || players.Count == playersExpected))
+            if (players.Where(x => x.registered).All(x => x.readyForNextRound))
             {
                 players.ForEach(x => x.readyForNextRound = false);
-                // as next round can start, increment round counter
-                currentRound++;
             }
             if (msg.type == "LobbyBetChange")
             {
