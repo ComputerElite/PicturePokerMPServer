@@ -327,7 +327,7 @@ public class Server
             }
             catch (Exception e)
             {
-                Logger.Log("Error sanitiing chat message" + e, LoggingType.Warning);
+                Logger.Log("Error sanitising chat message" + e, LoggingType.Warning);
             }
             CleanLobby();
             for (int i = 0; i < players.Count; i++)
