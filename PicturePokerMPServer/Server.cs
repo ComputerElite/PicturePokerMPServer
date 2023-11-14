@@ -285,21 +285,27 @@ public class Server
                 players.Add(new Player { handler = request });
                 if (automaticallyAddBots)
                 {
-                    for (int i = 1; i <= botCount; i++)
-                    {
-                        players.Add(new Player()
-                        {
-                            id = "Bot" + i,
-                            name = "Bot " + i,
-                            loginToken = i.ToString(),
-                            isServerBot = true,
-                            registered = true,
-                            playerNumber = (PlayerNumber)i,
-                            coins = 30
-                        });
-                    }
+                   
                 }
                 request.SendString(JsonSerializer.Serialize(new LobbyUpdated(this))); // Send player who joined the status of the lobby
+            }
+        }
+
+        private int botCount = 0;
+        public void AddBots(int count)
+        {
+            for (int i = botCount; i <= botCount - 1 + count; i++)
+            {
+                players.Add(new Player()
+                {
+                    id = "Bot" + i,
+                    name = "Bot " + i,
+                    loginToken = i.ToString(),
+                    isServerBot = true,
+                    registered = true,
+                    playerNumber = (PlayerNumber)i,
+                    coins = 30
+                });
             }
         }
 
@@ -320,6 +326,13 @@ public class Server
                     WebsocketMessage<string> chatMessage = JsonSerializer.Deserialize<WebsocketMessage<string>>(msg);
                     chatMessage.data = chatMessage.data.Replace("<", "").Replace(">", "");
                     chatMessage.data = chatMessage.data.Substring(0, Math.Min(100, chatMessage.data.Length));
+                    string[] cmd = chatMessage.data.Split(' ');
+                    if (cmd[0].ToLower() == "addbots")
+                    {
+                        int count = 1;
+                        if(cmd.Length >= 2) int.TryParse(cmd[1], out count);
+                        AddBots(count);
+                    }
                     msg = JsonSerializer.Serialize(chatMessage);
                 }
             }
