@@ -299,6 +299,7 @@ public class Server
                 if (players.Count >= 4)
                 {
                     SendChat("Arrr, ya ain't breaking this game with more than 4 players duh!");
+                    break;
                 }
                 players.Add(new Player()
                 {
