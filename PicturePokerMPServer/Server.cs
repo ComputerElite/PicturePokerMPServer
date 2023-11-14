@@ -320,7 +320,7 @@ public class Server
                 {
                     // replace >, < and limit the message to 100 chars
                     WebsocketMessage<string> chatMessage = JsonSerializer.Deserialize<WebsocketMessage<string>>(msg);
-                    chatMessage.data = chatMessage.data.Replace("<", "").Replace(">", "").Substring(0, 100);
+                    chatMessage.data = chatMessage.data.Replace("<", "").Replace(">", "").Substring(0, Math.Min(100, chatMessage.data.Length));
                     msg = JsonSerializer.Serialize(chatMessage);
                 }
             }
