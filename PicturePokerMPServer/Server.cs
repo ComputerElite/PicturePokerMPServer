@@ -201,7 +201,7 @@ public class Server
             }
             if (sendJoinMessage)
             {
-                Broadcast(JsonSerializer.Serialize(new ChatMessage(msg.name + " joined the lobby")),null); // send join message in chat
+                SendChat(msg.name + " joined the lobby");
             }
 
             UpdateBots(msg.type);
@@ -296,6 +296,10 @@ public class Server
         {
             for (int i = botCount; i <= botCount - 1 + count; i++)
             {
+                if (players.Count >= 4)
+                {
+                    SendChat("Arrr, ya ain't breaking this game with more than 4 players duh!");
+                }
                 players.Add(new Player()
                 {
                     id = "Bot" + i,
@@ -306,7 +310,9 @@ public class Server
                     playerNumber = (PlayerNumber)i,
                     coins = 30
                 });
+                botCount++;
             }
+            Broadcast(JsonSerializer.Serialize(new LobbyUpdated(this)),null); // broadcast lobby update
         }
 
         /// <summary>
@@ -327,7 +333,7 @@ public class Server
                     chatMessage.data = chatMessage.data.Replace("<", "").Replace(">", "");
                     chatMessage.data = chatMessage.data.Substring(0, Math.Min(100, chatMessage.data.Length));
                     string[] cmd = chatMessage.data.Split(' ');
-                    if (cmd[0].ToLower() == "addbots")
+                    if (cmd[0].ToLower() == "/addbots")
                     {
                         int count = 1;
                         if(cmd.Length >= 2) int.TryParse(cmd[1], out count);
@@ -352,6 +358,12 @@ public class Server
             }
         }
 
+        public void SendChat(string msg)
+        {
+            Broadcast(JsonSerializer.Serialize(new ChatMessage(msg)),null); // send leave message in chat
+
+        }
+
         public void CleanLobby()
         {
             for (int i = 0; i < players.Count; i++)
@@ -364,7 +376,7 @@ public class Server
                     if (name != "")
                     {
                         // Broadcast lobby status and send player left lobby message
-                        Broadcast(JsonSerializer.Serialize(new ChatMessage(name + " left the lobby")),null); // send leave message in chat
+                        SendChat(name + " left the lobby");
                         Broadcast(JsonSerializer.Serialize(new LobbyUpdated(this)),null); // broadcast lobby update
                     }
                 }
