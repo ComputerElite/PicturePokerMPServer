@@ -311,8 +311,8 @@ public class Server
                     playerNumber = (PlayerNumber)i,
                     coins = 30
                 });
-                botCount++;
             }
+            botCount += count;
             Broadcast(JsonSerializer.Serialize(new LobbyUpdated(this)),null); // broadcast lobby update
         }
 
