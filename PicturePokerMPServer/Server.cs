@@ -76,6 +76,7 @@ public class Server
         public int currentRound { get; set; } = 0;
         public int roundCount { get; set; } = 5;
         public int playersExpected { get; set; } = 0;
+		public bool useTimer { get; set; } = true;
         public DateTime lastActivity { get; set; } = DateTime.Now;
         
         public Dictionary<string, PlayerNumber> PlayerNumbers = new Dictionary<string, PlayerNumber>();
@@ -163,6 +164,15 @@ public class Server
                     // host changed rounds
                     WebsocketMessage<int> rounds = JsonSerializer.Deserialize<WebsocketMessage<int>>(orgMsg);
                     roundCount = rounds.data;
+                }
+            }
+            if (msg.type == "SetTimer")
+            {
+                if (host == msg.id)
+                {
+                    // host changed rounds
+                    WebsocketMessage<bool> timer = JsonSerializer.Deserialize<WebsocketMessage<bool>>(orgMsg);
+                    useTimer = timer.data;
                 }
             }
             if (msg.type == "SetRoundCount")
